@@ -47,9 +47,9 @@ public:
 
     void loadfile(string p);
 
-    vector<string> getRHS(string lhs1, string lhs2);
+    vector<string> getLHS(string lhs1, string lhs2);
 
-    vector<string> getRHS(string terminal);
+    vector<string> getLHS(string terminal);
 
 private:
     RULES rules;

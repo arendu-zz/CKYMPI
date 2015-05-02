@@ -23,12 +23,12 @@ void loadFile(string p) {
     }
 }
 
-vector<string> Grammar::getRHS(string lhs1, string lhs2) {
+vector<string> Grammar::getLHS(string lhs1, string lhs2) {
     vector<string> v;
     return v;
 }
 
-vector<string> Grammar::getRHS(string terminal) {
+vector<string> Grammar::getLHS(string terminal) {
     vector<string> v;
     return v;
 }
