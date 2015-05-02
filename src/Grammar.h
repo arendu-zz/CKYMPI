@@ -51,7 +51,7 @@ public:
 
     vector<string> getLHS(string terminal);
 
-    void split(vector<string> &tokens, const string &text);
+    void split(vector<string> &tokens, const string &text, char sep);
 
 private:
     RULES rules;

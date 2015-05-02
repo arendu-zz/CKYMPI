@@ -21,8 +21,8 @@ void Grammar::loadFile(string p) {
 
     while (getline(in, line)) {
         vector<string> items;
-        split(items, line);
-        
+        split(items, line, '\t');
+
 
     }
 }
@@ -37,9 +37,9 @@ vector<string> Grammar::getLHS(string terminal) {
     return v;
 }
 
-void Grammar::split(vector<string> &tokens, const string &text) {
+void Grammar::split(vector<string> &tokens, const string &text, char sep) {
     int start = 0, end = 0;
-    char sep = '\t';
+
     while ((end = text.find(sep, start)) != string::npos) {
         tokens.push_back(text.substr(start, end - start));
         start = end + 1;
