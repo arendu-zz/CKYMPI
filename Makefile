@@ -1,3 +1,4 @@
+
 all: mylife
 
 mylife: src/mylife.cpp src/Grammar.h src/Grammar.cpp
