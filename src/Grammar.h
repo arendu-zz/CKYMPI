@@ -6,6 +6,8 @@
 #define MYLIFE_GRAMMAR_H
 
 #include <string>
+#include <sstream>
+#include <vector>
 #include <fstream>
 #include <iostream>
 #include "port.h"
@@ -41,18 +43,20 @@ public:
         lineNum++;
     }
  */
-    Grammar(const string p) {
+    Grammar(const string p) { };
 
-    };
-
-    void loadfile(string p);
+    void loadFile(string p);
 
     vector<string> getLHS(string lhs1, string lhs2);
 
     vector<string> getLHS(string terminal);
 
+    void split(vector<string> &tokens, const string &text);
+
 private:
     RULES rules;
+
+
 };
 
 
