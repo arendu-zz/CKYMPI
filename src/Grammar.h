@@ -10,7 +10,18 @@
 #include <iostream>
 #include "port.h"
 
+
+struct StringPairHash {
+    size_t operator()(const pair <string, string> &x) const {
+        std::hash<std::string> hash_fn;
+        size_t x1 = hash_fn(x.first);
+        size_t x2 = hash_fn(x.second);
+        return (unsigned short) x1 << 16 | (unsigned) x2;
+    }
+};
+
 using namespace std;
+typedef unordered_map<pair<string, string>, string, StringPairHash> RULES;
 
 class Grammar {
 
@@ -31,20 +42,17 @@ public:
     }
  */
     Grammar(const string p) {
-        ifstream in(p.c_str());
-        if (!in) {
-            cerr << "cant load file\n";
-            exit(-1);
-        }
-        string line;
-        while (getline(in, line)) {
 
-        }
     };
 
-    string getRHS(string lhs1, string lhs2);
+    void loadfile(string p);
 
-    string getRHS(string terminal);
+    vector<string> getRHS(string lhs1, string lhs2);
+
+    vector<string> getRHS(string terminal);
+
+private:
+    RULES rules;
 };
 
 
