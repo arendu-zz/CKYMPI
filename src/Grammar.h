@@ -12,9 +12,10 @@
 #include <iostream>
 #include "port.h"
 
+using namespace std;
 
 struct StringPairHash {
-    size_t operator()(const pair <string, string> &x) const {
+    size_t operator()(const pair<string, string> &x) const {
         std::hash<std::string> hash_fn;
         size_t x1 = hash_fn(x.first);
         size_t x2 = hash_fn(x.second);
@@ -22,36 +23,29 @@ struct StringPairHash {
     }
 };
 
-using namespace std;
-typedef unordered_map<pair<string, string>, string, StringPairHash> RULES;
+
+typedef unordered_map<pair<string, string>, set<string>, StringPairHash> RULES;
 
 class Grammar {
 
 public:
-/*
- ifstream in(input.c_str());
-    if (!in) {
-        cerr << "Can't read " << input << endl;
-        return;
-    }
-    d.Convert("|||"); // not needed but original code always converts ||| first
-    int lineNum = 0;
-    while (getline(in, line)) {
-        static vector<unsigned> tmp;
-        d.ConvertWhitespaceDelimitedLine(line, &tmp);
-        PopulateFeatures(lineNum, tmp, use_null);
-        lineNum++;
-    }
- */
-    Grammar(const string p) { };
+    Grammar() { };
 
     void loadFile(string p);
 
-    vector<string> getLHS(string lhs1, string lhs2);
+    set<string> getLHS(string rhs1, string rhs2);
 
-    vector<string> getLHS(string terminal);
+    set<string> getLHS(string terminal);
 
     void split(vector<string> &tokens, const string &text, char sep);
+
+    void addRule(string lhs, string terminal);
+
+    void addRule(string lhs, string rhs1, string rhs2);
+
+    string EPS = "<eps>";
+
+    void displayRules();
 
 private:
     RULES rules;

@@ -3,6 +3,7 @@
 #include <vector>
 #include "port.h"
 #include <utility>
+#include "Grammar.h"
 
 using namespace std;
 
@@ -25,7 +26,8 @@ string receiveMessage(int source, int tag);
 int main(int argc, char **argv) {
     // Initialize the MPI environment
 
-
+    Grammar grammar;
+    grammar.loadFile("data/string_grammar");
     MPI_Init(NULL, NULL);
     int myProcessID;
     MPI_Comm_rank(MPI_COMM_WORLD, &myProcessID);
@@ -34,6 +36,9 @@ int main(int argc, char **argv) {
     INT2VEC process2stack;
     CELL2INT cell2process;
 
+    if (myProcessID == 0) {
+        grammar.displayRules();
+    }
 
     int N = 4; // sentence length
     bool done = false;
@@ -168,7 +173,7 @@ string receiveMessage(int source, int tag) {
 }
 
 int tagHash(int i, int j) {
-    return i + j; //(int) ((unsigned short) i) << 16 | (unsigned) j;
+    return i + j;//(int) ((unsigned short) i) << 16 | (unsigned) j;
 }
 
 void sendMessage(const string &bla, int dest, int tag) {
