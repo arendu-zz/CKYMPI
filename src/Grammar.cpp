@@ -39,6 +39,7 @@ void Grammar::loadFile(string p) {
 }
 
 set<string> Grammar::getLHS(string rhs1, string rhs2) {
+    cout << "looking for a rule for : " + rhs1 + "," + rhs2 + "\n";
     return rules[make_pair(rhs1, rhs2)];
 }
 
@@ -69,7 +70,7 @@ void Grammar::displayRules() {
         pair<string, string> rhs = kv.first;
         set<string> possibleLhs = kv.second;
         for (string lhs: possibleLhs) {
-            cerr << lhs << "-->" << rhs.first << "\t" << rhs.second << "\n";
+            cout << lhs << "-->" << rhs.first << "\t" << rhs.second << "\n";
         }
     }
 }

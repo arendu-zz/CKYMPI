@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
     Grammar g;
     g.loadFile("data/string_grammar");
-    string sentence[] = {"a", "b", "c", "d"};
+    string sentence[] = {"president", "ate", "the", "floor", "."};
 
     MPI_Init(NULL, NULL);
     int myProcessID;
@@ -43,7 +43,8 @@ int main(int argc, char **argv) {
         g.displayRules();
     }
 
-    int N = 4; // sentence length
+    int N = 5; // sentence length
+    printf("sentence length : %d\n", N);
     bool done = false;
     int d = 0;
     int column = 0;
@@ -69,8 +70,6 @@ int main(int argc, char **argv) {
     vector<Cell> stack = process2stack[myProcessID];
 
     for (Cell cell : stack) {
-        printf("%d, cell: %d,%d\n", myProcessID, cell.first, cell.second);
-
         unordered_map<Cell, vector<string>, CellHash> receivedMessages;
         if (cell.first != cell.second) {
             for (int j = cell.first; j < cell.second; j++) { // receive from previous row cells
@@ -81,7 +80,12 @@ int main(int argc, char **argv) {
                 split(rawData, basic_string, ',');
                 Cell reCell = make_pair(stoi(rawData[0]), stoi(rawData[1]));
                 rawData.erase(rawData.begin() + 0);
-                rawData.erase(rawData.begin() + 1);
+                rawData.erase(rawData.begin() + 0);
+                rawData.pop_back();
+                for (string s : rawData) {
+                    cout <<
+                    "received " + s + " from " + to_string(reCell.first) + ", " + to_string(reCell.second) + "\n";
+                }
                 receivedMessages[reCell] = rawData;
             }
             for (int i = cell.second; i > cell.first; i--) {
@@ -92,7 +96,12 @@ int main(int argc, char **argv) {
                 split(rawData, basic_string, ',');
                 Cell reCell = make_pair(stoi(rawData[0]), stoi(rawData[1]));
                 rawData.erase(rawData.begin() + 0);
-                rawData.erase(rawData.begin() + 1);
+                rawData.erase(rawData.begin() + 0);
+                rawData.pop_back();
+                for (string s : rawData) {
+                    cout <<
+                    "received " + s + " from " + to_string(reCell.first) + ", " + to_string(reCell.second) + "\n";
+                }
                 receivedMessages[reCell] = rawData;
             }
         }
@@ -102,7 +111,7 @@ int main(int argc, char **argv) {
         if (cell.first == cell.second) {
             // no wait  need to start sending
             string terminal = sentence[cell.first];
-            const vector<string> &vector = g->getLHS(terminal);
+            set<string> vector = g.getLHS(terminal);
             for (string s : vector) {
                 message += s;
                 message += ",";
@@ -110,14 +119,14 @@ int main(int argc, char **argv) {
         } else {
             set<string> setString;
 
-            for (int l = cell.first; l <= cell.second; l++) {
+            for (int l = cell.first; l < cell.second; l++) {
                 Cell c1 = make_pair(cell.first, l);
                 Cell c2 = make_pair(l + 1, cell.second);
                 vector<string> first = receivedMessages[c1];
                 vector<string> second = receivedMessages[c2];
                 for (string s1 : first) {
                     for (string s2 : second) {
-                        const vector<string> &vector = g.getLHS(s1, s2);
+                        set<string> vector = g.getLHS(s1, s2);
                         for (string nonTerminal : vector) {
                             setString.insert(nonTerminal);
                         }
@@ -129,7 +138,15 @@ int main(int argc, char **argv) {
                 message += nonTerminal;
                 message += ",";
             }
+            if (cell.first == 0 && cell.second == N - 1) {
+                if (setString.find("ROOT") != setString.end()) {
+                    cout << "Hurray!! Its a valid sentence!!";
+                } else {
+                    cout << "Woops!! This sentence sucks!!";
+                }
+            }
         }
+        cout << message + "\n";
         for (int i = cell.second + 1; i < N; i++) {
             int to_processID = cell2process[make_pair(cell.first, i)];
             int tag = tagHash(cell.first, cell.second);
@@ -140,7 +157,6 @@ int main(int argc, char **argv) {
             int tag = tagHash(cell.first, cell.second);
             sendMessage(message, to_processID, tag);
         }
-
     }
     MPI_Finalize();
 
@@ -156,12 +172,11 @@ string receiveMessage(int source, int tag) {
     MPI::COMM_WORLD.Recv(buf, l, MPI::CHAR, source, tag, status);
     string bla1(buf, l);
     delete[] buf;
-    cout << bla1 + "\n";
     return bla1;
 }
 
 int tagHash(int i, int j) {
-    return i + j;//(int) ((unsigned short) i) << 16 | (unsigned) j;
+    return (int) ((unsigned short) i) << 16 | (unsigned) j;
 }
 
 void sendMessage(const string &bla, int dest, int tag) {
