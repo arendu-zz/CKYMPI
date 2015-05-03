@@ -31,6 +31,7 @@ int main(int argc, char **argv) {
     if (myrank == 1) {
         int source = 0;
         int tag = 1;
+
         string msg = receiveMessage(source, tag);
 
 
