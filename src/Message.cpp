@@ -1,7 +1,3 @@
-//
-// Created by Adithya Renduchintala on 5/3/15.
-//
-
 #include "Message.h"
 
 string Message::toString() {

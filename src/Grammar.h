@@ -1,7 +1,3 @@
-//
-// Created by Adithya Renduchintala on 5/2/15.
-//
-
 #ifndef MYLIFE_GRAMMAR_H
 #define MYLIFE_GRAMMAR_H
 

@@ -25,12 +25,17 @@ string receiveMessage(int source, int tag);
 
 void split(vector<string> &tokens, const string &text, char sep);
 
+void loadSentence(string p, vector<string> &terminals);
+
 int main(int argc, char **argv) {
     // Initialize the MPI environment
 
     Grammar g;
     g.loadFile("data/string_grammar");
-    string sentence[] = {"the", "president", "ate", "ate", "the", "floor", "."};
+    vector<string> terminals;
+    loadSentence("data/test_sentence", terminals);
+    int N = (int) terminals.size(); // sentence length
+//    printf("sentence length : %d\n", N);
 
     MPI_Init(NULL, NULL);
     int myProcessID;
@@ -41,11 +46,10 @@ int main(int argc, char **argv) {
     CELL2INT cell2process;
 
     if (myProcessID == 0) {
+        cout << "Following are the grammar rules :\n";
         g.displayRules();
     }
 
-    int N = 6; // sentence length
-    printf("sentence length : %d\n", N);
     bool done = false;
     int d = 0;
     int column = 0;
@@ -100,7 +104,7 @@ int main(int argc, char **argv) {
         // now compute the sends
         if (cell.first == cell.second) {
             // no wait  need to start sending
-            string terminal = sentence[cell.first];
+            string terminal = terminals[cell.first];
             set<string> nt = g.getLHS(terminal);
             sendingMsg.setNonTerminals(nt);
 
@@ -129,13 +133,9 @@ int main(int argc, char **argv) {
                 } else {
                     cout << "Woops!! This sentence sucks!!";
                 }
-                for (string s : setString) {
-                    cout << s << ",";
-                }
                 cout << "\n";
             }
         }
-        cout << sendingMsg.toString() + "\n";
         for (int i = cell.second + 1; i < N; i++) {
             int to_processID = cell2process[make_pair(cell.first, i)];
             int tag = tagHash(cell.first, cell.second);
@@ -180,4 +180,16 @@ void split(vector<string> &tokens, const string &text, char sep) {
         start = end + 1;
     }
     tokens.push_back(text.substr(start));
+}
+
+void loadSentence(string p, vector<string> &terminals) {
+    ifstream in(p.c_str());
+    if (!in) {
+        cerr << "cant load file\n";
+        exit(-1);
+    }
+    string line;
+    while (getline(in, line)) {
+        split(terminals, line, ' ');
+    }
 }
