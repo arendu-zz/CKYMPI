@@ -17,9 +17,9 @@ class Message {
 public:
     set<string> NonTerminals;
     Cell fromCell;
-    
 
-    Message() { };
+
+    Message() { spanStr = ""; };
 
     Message(Cell cell, set<string> nonterminals) {
         fromCell = cell;
@@ -32,7 +32,14 @@ public:
 
     void fromString(string message);
 
+    void makeBracketedString();
+
     string toString();
+
+    string spanStr;
+private:
+    set<string> subtrees;
+
 
 };
 

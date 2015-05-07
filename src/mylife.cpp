@@ -102,7 +102,11 @@ int main(int argc, char **argv) {
             // no wait  need to start sending
             string terminal = sentence[cell.first];
             set<string> nt = g.getLHS(terminal);
+
             sendingMsg.setNonTerminals(nt);
+            //sendingMsg.spanStr = terminal;
+            //sendingMsg.makeBracketedString();
+
 
         } else {
             set<string> setString;
