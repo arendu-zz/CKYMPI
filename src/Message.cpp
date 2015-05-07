@@ -1,21 +1,29 @@
 #include "Message.h"
+#include <assert.h>
+#include <iostream>
+
+using namespace std;
 
 string Message::toString() {
     stringstream s1, s2;
     s1 << fromCell.first;;
     s2 << fromCell.second;
     string message = s1.str() + "," + s2.str() + "|";
-    for (string s : NonTerminals) {
-        message += s;
-        message += ",";
+    for (int i = 0; i < NonTerminals.size(); i++) {
+        message += NonTerminals[i];
+        string c = i == NonTerminals.size() - 1 ? "" : ",";
+        message += c;
     }
-    /*message += '|';
-    for (string p : subtrees) {
-        message += p;
-        message += ",";
-    }*/
+
+    message += '|';
+    for (int i = 0; i < SubTrees.size(); i++) {
+        message += SubTrees[i];
+        string c = i == NonTerminals.size() - 1 ? "" : ",";
+        message += c;
+    }
+
     return message;
-}
+};
 
 void Message::fromString(string message) {
     vector<string> rawData;
@@ -26,29 +34,30 @@ void Message::fromString(string message) {
     vector<string> ntparts;
     split(ntparts, rawData[1], ',');
     for (string nt : ntparts) {
-        NonTerminals.insert(nt);
+        NonTerminals.push_back(nt);
     }
-    /*vector<string> subparseparts;
+    vector<string> subparseparts;
     split(subparseparts, rawData[2], ',');
     for (string sp: subparseparts) {
-        subtrees.insert(sp);
-    }*/
+        SubTrees.push_back(sp);
+    }
+    assert(NonTerminals.size() == SubTrees.size());
 }
 
-void Message::setNonTerminals(set<string> nt) {
-    NonTerminals = nt;
-
-}
-
-void Message::makeBracketedString() {
-    if (spanStr.compare("") == 0) {
-        //pass this is not a diagonal cell
-    } else {
-        for (string nt : NonTerminals) {
-            string parse = "(" + nt + " " + spanStr + ")";
-            subtrees.insert(parse);
+void Message::setNonTerminalsAndParse(vector<string> nt, vector<string> st) {
+    assert(nt.size() == st.size());
+    NonTerminals.clear();
+    SubTrees.clear();
+    for (int i = 0; i < nt.size(); i++) {
+        string n = nt[i];
+        string p = st[i];
+        if (std::find(NonTerminals.begin(), NonTerminals.end(), n) == NonTerminals.end()) {
+            NonTerminals.push_back(n);
+            SubTrees.push_back(p);
         }
     }
+
+
 }
 
 void Message::split(vector<string> &tokens, const string &text, char sep) {

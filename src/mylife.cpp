@@ -1,9 +1,9 @@
 #include <mpi.h>
 #include <vector>
 #include "port.h"
-#include <utility>
 #include "Grammar.h"
 #include "Message.h"
+#include <assert.h>
 
 using namespace std;
 
@@ -46,8 +46,8 @@ int main(int argc, char **argv) {
     CELL2INT cell2process;
 
     if (myProcessID == 0) {
-        cout << "Following are the grammar rules :\n";
-        g.displayRules();
+        //cout << "Following are the grammar rules :\n";
+        //g.displayRules();
     }
 
     bool done = false;
@@ -105,39 +105,54 @@ int main(int argc, char **argv) {
         if (cell.first == cell.second) {
             // no wait  need to start sending
             string terminal = terminals[cell.first];
-            set<string> nt = g.getLHS(terminal);
-
-            sendingMsg.setNonTerminals(nt);
+            vector<string> nt = g.getLHS(terminal);
+            vector<string> pt;
+            for (int i = 0; i < nt.size(); i++) {
+                string n = nt[i];
+                pt.push_back("(" + n + " " + terminal + ")");
+            }
+            sendingMsg.setNonTerminalsAndParse(nt, pt);
             //sendingMsg.spanStr = terminal;
             //sendingMsg.makeBracketedString();
 
 
         } else {
-            set<string> setString;
+            vector<string> newNonTerminals;
+            vector<string> newSubParses;
 
             for (int l = cell.first; l < cell.second; l++) {
                 Cell c1 = make_pair(cell.first, l);
                 Cell c2 = make_pair(l + 1, cell.second);
                 Message msg1 = receivedMessages[c1];
                 Message msg2 = receivedMessages[c2];
-                for (string s1 : msg1.NonTerminals) {
-                    for (string s2 : msg2.NonTerminals) {
-                        set<string> vector = g.getLHS(s1, s2);
-                        for (string nonTerminal : vector) {
-                            setString.insert(nonTerminal);
+                for (int i = 0; i < msg1.NonTerminals.size(); i++) {
+                    string s1 = msg1.NonTerminals[i];
+                    string p1 = msg1.SubTrees[i];
+                    for (int j = 0; j < msg2.NonTerminals.size(); j++) {
+                        string s2 = msg2.NonTerminals[j];
+                        string p2 = msg2.SubTrees[j];
+                        vector<string> LHS = g.getLHS(s1, s2);
+                        for (string lhs : LHS) {
+                            newNonTerminals.push_back(lhs);
+                            string newParse = "(" + lhs + " " + p1 + " " + p2 + ")";
+                            newSubParses.push_back(newParse);
                         }
                     }
                 }
             }
 
-            sendingMsg.setNonTerminals(setString);
+            sendingMsg.setNonTerminalsAndParse(newNonTerminals, newSubParses);
             if (cell.first == 0 && cell.second == N - 1) {
-                if (setString.find("ROOT") != setString.end()) {
-                    cout << "Hurray!! Its a valid sentence!!";
+                vector<string>::const_iterator got = std::find(newNonTerminals.begin(), newNonTerminals.end(), "ROOT");
+                if (got != newNonTerminals.end()) {
+                    int pos = got - newNonTerminals.begin();
+                    cout << newSubParses[pos] << "\n";
+
                 } else {
-                    cout << "Woops!! This sentence sucks!!";
+                    cout << "Woops!! This sentence sucks!!\n";
                 }
-                cout << "\n";
+
+
             }
         }
         for (int i = cell.second + 1; i < N; i++) {
@@ -165,6 +180,7 @@ string receiveMessage(int source, int tag) {
     MPI::COMM_WORLD.Recv(buf, l, MPI::CHAR, source, tag, status);
     string bla1(buf, l);
     delete[] buf;
+    //cerr << "received:" << bla1 << "\n";
     return bla1;
 }
 
@@ -173,6 +189,7 @@ int tagHash(int i, int j) {
 }
 
 void sendMessage(const string &bla, int dest, int tag) {
+    //cerr << "sending:" << bla << "\n";
     MPI::COMM_WORLD.Send(bla.c_str(), bla.length(), MPI::CHAR, dest, tag);
 }
 

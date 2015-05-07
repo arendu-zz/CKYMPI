@@ -2,7 +2,6 @@
 #define MYLIFE_MESSAGE_H
 
 #include <vector>
-#include <set>
 #include <sstream>
 
 
@@ -11,29 +10,24 @@ typedef pair<int, int> Cell;
 
 class Message {
 public:
-    set<string> NonTerminals;
+    vector<string> NonTerminals;
+    vector<string> SubTrees;
     Cell fromCell;
 
-    Message() { spanStr = ""; };
+    Message() { };
 
-    Message(Cell cell, set<string> nonterminals) {
+    Message(Cell cell) {
         fromCell = cell;
-        NonTerminals = nonterminals;
     };
 
-    void setNonTerminals(set<string> nt);
+    void setNonTerminalsAndParse(vector<string> nt, vector<string> subparse);
 
     void split(vector<string> &tokens, const string &text, char sep);
 
     void fromString(string message);
 
-    void makeBracketedString();
 
     string toString();
-
-    string spanStr;
-private:
-    set<string> subtrees;
 
 
 };

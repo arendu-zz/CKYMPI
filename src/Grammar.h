@@ -29,9 +29,9 @@ public:
 
     void loadFile(string p);
 
-    set<string> getLHS(string rhs1, string rhs2);
+    vector<string> getLHS(string rhs1, string rhs2);
 
-    set<string> getLHS(string terminal);
+    vector<string> getLHS(string terminal);
 
     void split(vector<string> &tokens, const string &text, char sep);
 

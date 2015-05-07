@@ -34,20 +34,26 @@ void Grammar::loadFile(string p) {
     }
 }
 
-set<string> Grammar::getLHS(string rhs1, string rhs2) {
-    return rules[make_pair(rhs1, rhs2)];
+vector<string> Grammar::getLHS(string rhs1, string rhs2) {
+    set<string> s = rules[make_pair(rhs1, rhs2)];
+    vector<string> v(s.begin(), s.end());
+    return v;
 }
 
-set<string> Grammar::getLHS(string terminal) {
-    return rules[make_pair(terminal, EPS)];
+vector<string> Grammar::getLHS(string terminal) {
+    set<string> s = rules[make_pair(terminal, EPS)];
+    vector<string> v(s.begin(), s.end());
+    return v;
 }
 
 void Grammar::addRule(string lhs, string rhs1, string rhs2) {
     rules[make_pair(rhs1, rhs2)].insert(lhs);
+
 }
 
 void Grammar::addRule(string lhs, string terminal) {
     rules[make_pair(terminal, EPS)].insert(lhs);
+
 }
 
 void Grammar::split(vector<string> &tokens, const string &text, char sep) {
