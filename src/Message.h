@@ -1,7 +1,3 @@
-//
-// Created by Adithya Renduchintala on 5/3/15.
-//
-
 #ifndef MYLIFE_MESSAGE_H
 #define MYLIFE_MESSAGE_H
 
@@ -17,7 +13,6 @@ class Message {
 public:
     set<string> NonTerminals;
     Cell fromCell;
-
 
     Message() { spanStr = ""; };
 
