@@ -1,13 +1,15 @@
 1	ROOT	S Punc
-1	Punc	.
-1	Punc	!
+1.5	Punc	.
+1.1	Punc	!
 1	S	NP VP
+0.2	VP	XVerb NP
 1	VP	Verb NP
 1	NP	Det Noun
 1	NP	NP PP
 1	PP	Prep NP
 1	Noun	Adj Noun
 1	Verb	ate
+1	XVerb	ate
 1	Verb	wanted
 1	Verb	kissed
 1	Verb	understood

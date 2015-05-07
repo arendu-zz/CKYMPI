@@ -16,15 +16,19 @@ void Grammar::loadFile(string p) {
     while (getline(in, line)) {
         vector<string> items;
         split(items, line, '\t');
+        LhsStruct lhsStruct;
+        lhsStruct.lhs = items[1];
+        lhsStruct.score = stod(items[0]);
+        lhsStruct.subtree = "";
         //ignoring item[0]
         if (items.size() == 3) {
             vector<string> lhs;
             split(lhs, items[2], ' ');
             if (lhs.size() == 2) {
-                addRule(items[1], lhs[0], lhs[1]);
+                addRule(lhsStruct, lhs[0], lhs[1]);
 
             } else if (lhs.size() == 1) {
-                addRule(items[1], lhs[0]);
+                addRule(lhsStruct, lhs[0]);
 
             }
 
@@ -34,24 +38,23 @@ void Grammar::loadFile(string p) {
     }
 }
 
-vector<string> Grammar::getLHS(string rhs1, string rhs2) {
-    set<string> s = rules[make_pair(rhs1, rhs2)];
-    vector<string> v(s.begin(), s.end());
-    return v;
+set<LhsStruct> Grammar::getLHS(string rhs1, string rhs2) {
+    set<LhsStruct> lhsSet = rules[make_pair(rhs1, rhs2)];
+    //vector<LhsStruct> v(s.begin(), s.end());
+    return lhsSet;
 }
 
-vector<string> Grammar::getLHS(string terminal) {
-    set<string> s = rules[make_pair(terminal, EPS)];
-    vector<string> v(s.begin(), s.end());
-    return v;
+set<LhsStruct> Grammar::getLHS(string terminal) {
+    set<LhsStruct> lhsSet = rules[make_pair(terminal, EPS)];
+    return lhsSet;
 }
 
-void Grammar::addRule(string lhs, string rhs1, string rhs2) {
+void Grammar::addRule(LhsStruct lhs, string rhs1, string rhs2) {
     rules[make_pair(rhs1, rhs2)].insert(lhs);
 
 }
 
-void Grammar::addRule(string lhs, string terminal) {
+void Grammar::addRule(LhsStruct lhs, string terminal) {
     rules[make_pair(terminal, EPS)].insert(lhs);
 
 }
@@ -69,9 +72,9 @@ void Grammar::split(vector<string> &tokens, const string &text, char sep) {
 void Grammar::displayRules() {
     for (auto kv : rules) {
         pair<string, string> rhs = kv.first;
-        set<string> possibleLhs = kv.second;
-        for (string lhs: possibleLhs) {
-            cout << lhs << "-->" << rhs.first << "\t" << rhs.second << "\n";
+        set<LhsStruct> possibleLhs = kv.second;
+        for (LhsStruct lhs: possibleLhs) {
+            cout << lhs.lhs << "-->" << rhs.first << "\t" << rhs.second << "(" << lhs.score << ")\n";
         }
     }
 }

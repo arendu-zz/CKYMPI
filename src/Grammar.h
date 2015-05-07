@@ -19,8 +19,22 @@ struct StringPairHash {
     }
 };
 
+struct LhsStruct {
+    string lhs;
+    double score;
+    string subtree;
 
-typedef unordered_map<pair<string, string>, set<string>, StringPairHash> RULES;
+    bool operator<(const LhsStruct &other) const {
+        return lhs.compare(other.lhs) < 0;
+    }
+
+    bool operator==(const LhsStruct &other) const {
+        return (lhs.compare(other.lhs) == 0);
+    }
+
+};
+
+typedef unordered_map<pair<string, string>, set<LhsStruct>, StringPairHash> RULES;
 
 class Grammar {
 
@@ -29,15 +43,15 @@ public:
 
     void loadFile(string p);
 
-    vector<string> getLHS(string rhs1, string rhs2);
+    set<LhsStruct> getLHS(string rhs1, string rhs2);
 
-    vector<string> getLHS(string terminal);
+    set<LhsStruct> getLHS(string terminal);
 
     void split(vector<string> &tokens, const string &text, char sep);
 
-    void addRule(string lhs, string terminal);
+    void addRule(LhsStruct lhsScore, string terminal);
 
-    void addRule(string lhs, string rhs1, string rhs2);
+    void addRule(LhsStruct lhsScore, string rhs1, string rhs2);
 
     string EPS = "<eps>";
 

@@ -21,7 +21,7 @@ void sendMessage(const string &bla, int dest, int tag);
 
 int tagHash(int i, int j);
 
-string receiveMessage(int source, int tag);
+string receiveMessage(int source, int tag, int x, int y);
 
 void split(vector<string> &tokens, const string &text, char sep);
 
@@ -33,7 +33,8 @@ int main(int argc, char **argv) {
     Grammar g;
     g.loadFile("data/string_grammar");
     vector<string> terminals;
-    loadSentence("data/test_sentence", terminals);
+    //loadSentence("data/test_sentence", terminals);
+    loadSentence("data/simple_sentence", terminals);
     int N = (int) terminals.size(); // sentence length
 //    printf("sentence length : %d\n", N);
 
@@ -80,7 +81,7 @@ int main(int argc, char **argv) {
             for (int j = cell.first; j < cell.second; j++) { // receive from previous row cells
                 int from_processID = cell2process[make_pair(cell.first, j)];
                 int tag = tagHash(cell.first, j);
-                const string &basic_string = receiveMessage(from_processID, tag);
+                const string &basic_string = receiveMessage(from_processID, tag, cell.first, cell.second);
                 Message receivedMsg;
                 receivedMsg.fromString(basic_string);
                 receivedMessages[receivedMsg.fromCell] = receivedMsg;
@@ -89,7 +90,7 @@ int main(int argc, char **argv) {
             for (int i = cell.second; i > cell.first; i--) {
                 int from_processID = cell2process[make_pair(i, cell.second)];
                 int tag = tagHash(i, cell.second);
-                const string &basic_string = receiveMessage(from_processID, tag);
+                const string &basic_string = receiveMessage(from_processID, tag, cell.first, cell.second);
                 Message receivedMsg;
                 receivedMsg.fromString(basic_string);
                 receivedMessages[receivedMsg.fromCell] = receivedMsg;
@@ -105,54 +106,71 @@ int main(int argc, char **argv) {
         if (cell.first == cell.second) {
             // no wait  need to start sending
             string terminal = terminals[cell.first];
-            vector<string> nt = g.getLHS(terminal);
-            vector<string> pt;
-            for (int i = 0; i < nt.size(); i++) {
-                string n = nt[i];
-                pt.push_back("(" + n + " " + terminal + ")");
+            set<LhsStruct> nt;
+
+            for (LhsStruct n : g.getLHS(terminal)) {
+
+                n.subtree = "(" + n.lhs + " " + terminal + ")";
+                nt.insert(n);
             }
-            sendingMsg.setNonTerminalsAndParse(nt, pt);
+            sendingMsg.setNonTerminalsAndParse(nt);
             //sendingMsg.spanStr = terminal;
             //sendingMsg.makeBracketedString();
 
 
         } else {
-            vector<string> newNonTerminals;
-            vector<string> newSubParses;
+            set<LhsStruct> newNonTerminals;
 
             for (int l = cell.first; l < cell.second; l++) {
                 Cell c1 = make_pair(cell.first, l);
                 Cell c2 = make_pair(l + 1, cell.second);
                 Message msg1 = receivedMessages[c1];
                 Message msg2 = receivedMessages[c2];
-                for (int i = 0; i < msg1.NonTerminals.size(); i++) {
-                    string s1 = msg1.NonTerminals[i];
-                    string p1 = msg1.SubTrees[i];
-                    for (int j = 0; j < msg2.NonTerminals.size(); j++) {
-                        string s2 = msg2.NonTerminals[j];
-                        string p2 = msg2.SubTrees[j];
-                        vector<string> LHS = g.getLHS(s1, s2);
-                        for (string lhs : LHS) {
-                            newNonTerminals.push_back(lhs);
-                            string newParse = "(" + lhs + " " + p1 + " " + p2 + ")";
-                            newSubParses.push_back(newParse);
+                for (LhsStruct s1 : msg1.NonTerminals) {
+
+                    for (LhsStruct s2 : msg2.NonTerminals) {
+
+                        set<LhsStruct> LHS = g.getLHS(s1.lhs, s2.lhs);
+
+                        for (LhsStruct lhs : LHS) {
+                            string newsym = lhs.lhs;
+                            double newScore = lhs.score * s1.score * s2.score;
+                            string newSubParse = "(" + newsym + " " + s1.subtree + " " + s2.subtree + ")";
+                            LhsStruct newLhs;
+                            newLhs.lhs = newsym;
+                            newLhs.score = newScore;
+                            newLhs.subtree = newSubParse;
+                            set<LhsStruct>::iterator got = newNonTerminals.find(newLhs);
+                            if (got == newNonTerminals.end()) {
+                                newNonTerminals.insert(newLhs);
+                            } else {
+                                LhsStruct oldLhs = *got;
+                                if (oldLhs.score < newLhs.score) {
+                                    //cerr << "replacing...\n";
+                                    newNonTerminals.erase(oldLhs);
+                                    newNonTerminals.insert(newLhs);
+                                    //oldLhs.score = newLhs.score;
+                                    //oldLhs.subtree = newLhs.subtree;
+                                }
+                            }
+
                         }
                     }
                 }
             }
-
-            sendingMsg.setNonTerminalsAndParse(newNonTerminals, newSubParses);
+            sendingMsg.setNonTerminalsAndParse(newNonTerminals);
             if (cell.first == 0 && cell.second == N - 1) {
-                vector<string>::const_iterator got = std::find(newNonTerminals.begin(), newNonTerminals.end(), "ROOT");
-                if (got != newNonTerminals.end()) {
-                    int pos = got - newNonTerminals.begin();
-                    cout << newSubParses[pos] << "\n";
-
-                } else {
+                bool foundParse = false;
+                for (LhsStruct lhsStruct : newNonTerminals) {
+                    if (lhsStruct.lhs.compare("ROOT") == 0) {
+                        foundParse = true;
+                        cout << lhsStruct.subtree << "\n";
+                        cout << lhsStruct.score << "\n";
+                    }
+                }
+                if (!foundParse) {
                     cout << "Woops!! This sentence sucks!!\n";
                 }
-
-
             }
         }
         for (int i = cell.second + 1; i < N; i++) {
@@ -172,7 +190,7 @@ int main(int argc, char **argv) {
 }
 
 
-string receiveMessage(int source, int tag) {
+string receiveMessage(int source, int tag, int at_x, int at_y) {
     MPI::Status status;
     MPI::COMM_WORLD.Probe(source, tag, status);
     int l = status.Get_count(MPI::CHAR);
@@ -180,7 +198,7 @@ string receiveMessage(int source, int tag) {
     MPI::COMM_WORLD.Recv(buf, l, MPI::CHAR, source, tag, status);
     string bla1(buf, l);
     delete[] buf;
-    //cerr << "received:" << bla1 << "\n";
+    //cerr << "(" << at_x << "," << at_y << ")received:" << bla1 << "\n";
     return bla1;
 }
 

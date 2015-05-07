@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <sstream>
+#include "Grammar.h"
 
 
 using namespace std;
@@ -10,8 +11,7 @@ typedef pair<int, int> Cell;
 
 class Message {
 public:
-    vector<string> NonTerminals;
-    vector<string> SubTrees;
+    set<LhsStruct> NonTerminals;
     Cell fromCell;
 
     Message() { };
@@ -20,7 +20,7 @@ public:
         fromCell = cell;
     };
 
-    void setNonTerminalsAndParse(vector<string> nt, vector<string> subparse);
+    void setNonTerminalsAndParse(set<LhsStruct> nt);
 
     void split(vector<string> &tokens, const string &text, char sep);
 

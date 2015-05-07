@@ -1,4 +1,5 @@
 #include "Message.h"
+#include "Grammar.h"
 #include <assert.h>
 #include <iostream>
 
@@ -8,19 +9,18 @@ string Message::toString() {
     stringstream s1, s2;
     s1 << fromCell.first;;
     s2 << fromCell.second;
+
     string message = s1.str() + "," + s2.str() + "|";
-    for (int i = 0; i < NonTerminals.size(); i++) {
-        message += NonTerminals[i];
-        string c = i == NonTerminals.size() - 1 ? "" : ",";
+    int i = 0;
+    for (LhsStruct nt : NonTerminals) {
+        stringstream scoreStr;
+        scoreStr << nt.score;
+        message += nt.lhs + "," + scoreStr.str() + "," + nt.subtree;
+        string c = i == NonTerminals.size() - 1 ? "" : "|";
         message += c;
+        i++;
     }
 
-    message += '|';
-    for (int i = 0; i < SubTrees.size(); i++) {
-        message += SubTrees[i];
-        string c = i == NonTerminals.size() - 1 ? "" : ",";
-        message += c;
-    }
 
     return message;
 };
@@ -31,33 +31,26 @@ void Message::fromString(string message) {
     vector<string> cellparts;
     split(cellparts, rawData[0], ',');
     fromCell = make_pair(stoi(cellparts[0]), stoi(cellparts[1]));
-    vector<string> ntparts;
-    split(ntparts, rawData[1], ',');
-    for (string nt : ntparts) {
-        NonTerminals.push_back(nt);
+    NonTerminals.clear();
+    for (int i = 1; i < rawData.size(); i++) {
+        if (rawData[i].compare("") != 0) {
+            LhsStruct nt;
+            vector<string> ntparts;
+            split(ntparts, rawData[i], ',');
+            assert(ntparts.size() == 3);
+            nt.lhs = ntparts[0];
+            nt.score = stod(ntparts[1]);
+            nt.subtree = ntparts[2];
+            NonTerminals.insert(nt);
+        }
+
     }
-    vector<string> subparseparts;
-    split(subparseparts, rawData[2], ',');
-    for (string sp: subparseparts) {
-        SubTrees.push_back(sp);
-    }
-    assert(NonTerminals.size() == SubTrees.size());
+
 }
 
-void Message::setNonTerminalsAndParse(vector<string> nt, vector<string> st) {
-    assert(nt.size() == st.size());
+void Message::setNonTerminalsAndParse(set<LhsStruct> nt) {
     NonTerminals.clear();
-    SubTrees.clear();
-    for (int i = 0; i < nt.size(); i++) {
-        string n = nt[i];
-        string p = st[i];
-        if (std::find(NonTerminals.begin(), NonTerminals.end(), n) == NonTerminals.end()) {
-            NonTerminals.push_back(n);
-            SubTrees.push_back(p);
-        }
-    }
-
-
+    NonTerminals = nt;
 }
 
 void Message::split(vector<string> &tokens, const string &text, char sep) {
