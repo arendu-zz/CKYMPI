@@ -3,9 +3,9 @@
 #include "port.h"
 #include "Grammar.h"
 #include "Message.h"
-#include <assert.h>
 
 using namespace std;
+using namespace std::chrono;
 
 struct CellHash {
     size_t operator()(const pair<short, short> &x) const {
@@ -33,8 +33,8 @@ int main(int argc, char **argv) {
     Grammar g;
     g.loadFile("data/string_grammar");
     vector<string> terminals;
-    //loadSentence("data/test_sentence", terminals);
-    loadSentence("data/simple_sentence", terminals);
+    loadSentence("data/test_sentence", terminals);
+//    loadSentence("data/simple_sentence", terminals);
     int N = (int) terminals.size(); // sentence length
 //    printf("sentence length : %d\n", N);
 
@@ -46,10 +46,10 @@ int main(int argc, char **argv) {
     INT2VEC process2stack;
     CELL2INT cell2process;
 
-    if (myProcessID == 0) {
-        //cout << "Following are the grammar rules :\n";
-        //g.displayRules();
-    }
+    milliseconds startMs = duration_cast<milliseconds>(
+            system_clock::now().time_since_epoch()
+    );
+
 
     bool done = false;
     int d = 0;
@@ -153,13 +153,15 @@ int main(int argc, char **argv) {
                                     //oldLhs.subtree = newLhs.subtree;
                                 }
                             }
-
                         }
                     }
                 }
             }
             sendingMsg.setNonTerminalsAndParse(newNonTerminals);
             if (cell.first == 0 && cell.second == N - 1) {
+                milliseconds endMs = duration_cast<milliseconds>(
+                        system_clock::now().time_since_epoch()
+                );
                 bool foundParse = false;
                 for (LhsStruct lhsStruct : newNonTerminals) {
                     if (lhsStruct.lhs.compare("ROOT") == 0) {
@@ -171,6 +173,7 @@ int main(int argc, char **argv) {
                 if (!foundParse) {
                     cout << "Woops!! This sentence sucks!!\n";
                 }
+                cout << (endMs.count() - startMs.count()) << "\n";
             }
         }
         for (int i = cell.second + 1; i < N; i++) {
