@@ -41,7 +41,7 @@ class Grammar {
 public:
     Grammar() { };
 
-    void loadFile(string p);
+    void loadFile(string file);
 
     set<LhsStruct> getLHS(string rhs1, string rhs2);
 

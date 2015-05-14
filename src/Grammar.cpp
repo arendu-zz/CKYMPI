@@ -5,8 +5,8 @@
 using namespace std;
 
 
-void Grammar::loadFile(string p) {
-    ifstream in(p.c_str());
+void Grammar::loadFile(string file) {
+    ifstream in(file.c_str());
     if (!in) {
         cerr << "cant load file\n";
         exit(-1);
@@ -40,7 +40,6 @@ void Grammar::loadFile(string p) {
 
 set<LhsStruct> Grammar::getLHS(string rhs1, string rhs2) {
     set<LhsStruct> lhsSet = rules[make_pair(rhs1, rhs2)];
-    //vector<LhsStruct> v(s.begin(), s.end());
     return lhsSet;
 }
 

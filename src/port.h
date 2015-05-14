@@ -23,20 +23,19 @@
 
 #endif
 
+#include <set>
+
 #if defined(__APPLE__) && defined(MAC_OS_X_VERSION_10_9) && \
   MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9
 
 #include <unordered_map>
-#include <set>
 #include <functional>
 
 #else // Assuming older OS X, Linux or similar platforms
 #include <tr1/unordered_map>
-#include <tr1/set>
 #include <tr1/functional>
 namespace std {
 using tr1::unordered_map;
-using tr1::hash;
 } // namespace std
 #endif
 

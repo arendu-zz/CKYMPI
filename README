@@ -1,0 +1,12 @@
+Our code depends on mpic++ library to compile. Makefile is present in src folder, which can be used to build
+executable named ckympi.
+
+This executable should be run using `mpirun` command with number of processes to be used as an argument. A sample
+command would be :
+`mpirun -np 10 ckympi`
+
+Our codebase consists of following classes (all classes, except port.h, are written from the scratch):
+1. ckympi.cpp
+2. Grammar.cpp (+ header file)
+3. Message.cpp (+ header file)
+4. port.h (this file is used to ensure correct libraries are loaded into environment based on OS)
