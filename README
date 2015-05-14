@@ -10,3 +10,6 @@ Our codebase consists of following classes (all classes, except port.h, are writ
 2. Grammar.cpp (+ header file)
 3. Message.cpp (+ header file)
 4. port.h (this file is used to ensure correct libraries are loaded into environment based on OS)
+
+There is an additional 'data' folder under source directory. This folder consists of a grammar file and another file
+'test_sentence' which contains the sentence which we want to parse.
